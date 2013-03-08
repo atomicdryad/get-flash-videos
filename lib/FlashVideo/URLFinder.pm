@@ -37,6 +37,16 @@ sub find_package {
     }
   }
 
+  # Handle redirection such as short urls.
+  if (!defined $package) {
+    $browser->get($url);
+    if ($browser->response->is_redirect) {
+      my $possible_url = $browser->response->header('Location');
+      $package = _find_package_url($possible_url, $browser);
+      return _found($package, $possible_url) if (defined $package);
+    }
+  }
+
   if(!defined $package) {
     for(@extra_can_handle) {
       s/FlashVideo::Site:://;
@@ -88,7 +98,9 @@ sub _find_package_url {
 
 sub _found {
   my($package, $url) = @_;
-  info "Using method '" . lc((split /::/, $package)[-1]) . "' for $url";
+  my $pv = eval "\$".$package."::VERSION";
+  $pv = ' plugin version ' . $pv if $pv;
+  info "Using method '" . lc((split /::/, $package)[-1]) . "'$pv for $url";
   return $package, $url;
 }
 
