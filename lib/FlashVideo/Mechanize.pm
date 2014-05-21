@@ -74,6 +74,8 @@ sub get {
     print STDERR "<- $text\n";
   }
 
+  print STDERR $self->response->header("X-Died")."\n" if(defined $self->response->header("X-Died") && ! $App::get_flash_videos::opt{quiet} );
+
   return $r;
 }
 
